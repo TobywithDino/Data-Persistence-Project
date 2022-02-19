@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -21,7 +23,7 @@ public class MainManager : MonoBehaviour
     
     // Start is called before the first frame update
     void Start()
-    {
+    {    
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +38,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        ShowRecord();
     }
 
     private void Update()
@@ -59,6 +63,11 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                ProcessManager processManager = GameObject.Find("ProcessManager").GetComponent<ProcessManager>();
+                processManager.Quit();
+            }
         }
     }
 
@@ -68,9 +77,29 @@ public class MainManager : MonoBehaviour
         ScoreText.text = $"Score : {m_Points}";
     }
 
+    void ShowRecord()
+    {
+        if (ProcessManager.Instance.bestPlayerName != null)
+        {
+            BestScoreText.text = $"Best Score : {ProcessManager.Instance.bestPlayerName} : {ProcessManager.Instance.bestPoints}";
+        }
+        
+    }
+
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        SaveRecord(m_Points, ProcessManager.Instance.playerName);       
+    }
+
+    private void SaveRecord(int Score, string Name)
+    {
+        if(Score >= ProcessManager.Instance.bestPoints)
+        {
+            ProcessManager.Instance.bestPoints = Score;
+            ProcessManager.Instance.bestPlayerName = Name;
+            BestScoreText.text = $"Best Score : {ProcessManager.Instance.bestPlayerName} : {ProcessManager.Instance.bestPoints}";
+        }    
     }
 }
